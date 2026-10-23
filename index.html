@@ -1,0 +1,1361 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0}</style></head><body>
+<title>HypeMind: Brands-Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one column workbench. Filter bar on top (brand, topic, time frame, sources), then two tabs: Ask and Requests. */
+:root {
+  --bg: #8ecebe;
+  --surface: #fff8e4;
+  --surface-2: #f6edcf;
+  --ink: #0c1f4a;
+  --muted: #3f5560;
+  --line: #d8cfae;
+  --teal: #8ecebe;
+  --accent: #1968ff;
+  --accent-ink: #ffffff;
+  --drive: #1b7f5c;
+  --web: #1968ff;
+  --social: #c2306b;
+  --cal: #7a3fc4;
+  --news: #a8640a;
+  --bad: #b3261e;
+  --font-display: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1a2e; --surface: #12263d; --surface-2: #183049; --ink: #fff8e4; --muted: #a9c4c0;
+    --line: #26425a; --accent: #8ecebe; --accent-ink: #0b1a2e;
+    --drive: #4cc29a; --web: #7db2ff; --social: #f27aae; --cal: #b794f4; --news: #e5a94f; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1a2e; --surface: #12263d; --surface-2: #183049; --ink: #fff8e4; --muted: #a9c4c0;
+  --line: #26425a; --accent: #8ecebe; --accent-ink: #0b1a2e;
+  --drive: #4cc29a; --web: #7db2ff; --social: #f27aae; --cal: #b794f4; --news: #e5a94f; --bad: #ff8a80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14.5px; line-height: 1.55;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; line-height: 1.15; }
+a { color: var(--accent); }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+.top h1 { font-size: 30px; letter-spacing: -0.01em; }
+.tag { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 2px 8px; }
+button.tag.signup { font: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+button.tag.signup:hover { filter: brightness(1.08); }
+button.tag.signup.done { background: transparent; color: var(--accent); text-transform: none; letter-spacing: 0; cursor: default; }
+.signupform { display: flex; flex-direction: column; gap: 8px; }
+.signupform .hint.bad { color: var(--bad); font-weight: 600; }
+.asof { margin-left: auto; font-size: 13px; color: var(--muted); }
+.banner { margin: 0; color: var(--muted); font-size: 13px; max-width: 78ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.fbar { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+.fgroup { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fgroup.wide { flex: 1 1 100%; }
+.flabel { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.fq { font-weight: 600; font-size: 14px; }
+.brands, .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.bchip, .chip { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.bchip:hover, .chip:hover { border-color: var(--accent); }
+.bchip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+select, input[type="date"] { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; max-width: 100%; }
+input[type="text"] { max-width: 100%; }
+.custom { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.srcs-row { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.srcs-row label { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+.srcs-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+.scope { margin: 0; font-size: 13px; color: var(--muted); }
+.scope b { color: var(--ink); }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { font: inherit; font-weight: 600; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 8px 14px; cursor: pointer; margin-bottom: -1px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.count { font-size: 11px; font-weight: 700; background: var(--news); color: var(--surface); border-radius: 999px; padding: 0 7px; min-width: 18px; text-align: center; }
+.tab:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.askrow { display: flex; gap: 8px; }
+.askrow input { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; }
+.btn { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+.btn.small { padding: 5px 12px; font-size: 13px; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 5px 12px; font-size: 13px; }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.link { font: inherit; font-size: 13px; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 0; text-align: left; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 8px; }
+.chips.tight { margin-top: 0; }
+.empty { color: var(--muted); margin: 0; padding: 14px 0 6px; max-width: 62ch; }
+.thinking { color: var(--muted); margin: 0; padding: 14px 0 6px; }
+.answer { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; }
+.qecho, .sechead { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.lead { font-size: 17px; margin: 0; max-width: 65ch; }
+[hidden] { display: none !important; }
+.passage { margin: 0; font-size: 16px; line-height: 1.65; max-width: 66ch; }
+.needwhy { display: flex; flex-direction: column; gap: 6px; }
+.needwhy .counter { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.needwhy .err { margin: 0; font-size: 13px; font-weight: 600; color: var(--bad); }
+.needwhy textarea.invalid { border-color: var(--bad); }
+.reqnote { margin: 0; font-size: 13.5px; border-left: 3px solid var(--accent); padding-left: 10px; max-width: 68ch; }
+.reqnote b { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: block; }
+.cite { display: inline-block; font-size: 11px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 4px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; }
+.xlink { font-size: 13px; margin-left: 6px; white-space: nowrap; }
+.notice { margin: 0; font-size: 13px; color: var(--news); border-left: 3px solid var(--news); padding-left: 10px; max-width: 68ch; }
+.quote { margin: 0; font-size: 14px; border-left: 3px solid var(--line); padding-left: 10px; max-width: 68ch; }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.warn { color: var(--news); font-weight: 600; }
+.items { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; align-items: start; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+@media (max-width: 560px) { .item { grid-template-columns: minmax(0, 1fr); } }
+.ititle { display: flex; align-items: baseline; gap: 8px; font-weight: 600; overflow-wrap: anywhere; }
+.num { flex: none; font-size: 12px; font-weight: 700; color: var(--accent-ink); background: var(--accent); border-radius: 4px; min-width: 20px; text-align: center; padding: 0 5px; }
+.imeta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 3px; }
+.src-link { display: inline-block; font-size: 13px; margin-top: 4px; }
+.badge { --c: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 4px; padding: 2px 8px; white-space: nowrap; }
+.badge.drive { --c: var(--drive); } .badge.web { --c: var(--web); } .badge.social { --c: var(--social); } .badge.news { --c: var(--news); } .badge.calendar { --c: var(--cal); }
+.badge.pending { --c: var(--news); } .badge.approved { --c: var(--drive); } .badge.declined { --c: var(--bad); }
+.btag { font-weight: 600; color: var(--ink); }
+.acell { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.access { font-size: 12.5px; color: var(--muted); }
+.access.ok { color: var(--drive); font-weight: 600; }
+.access.wait { color: var(--news); font-weight: 600; }
+.access.bad { color: var(--bad); font-weight: 600; }
+.details { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 18px; border-top: 1px dashed var(--line); padding-top: 10px; margin: 0; font-size: 13px; }
+.details div { min-width: 0; }
+.details dt { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; font-size: 12.5px; margin-top: 2px; }
+.reqform { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.reqform label, .bulk label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.bulk, .gapform { display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 12px; }
+textarea { width: 100%; font: inherit; line-height: 1.55; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; resize: vertical; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fb { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.thumb { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.thumb:hover { border-color: var(--accent); }
+.thumb[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.thumb svg.down { transform: rotate(180deg); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+@media (max-width: 480px) { .stats { gap: 6px; } }
+.stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.stat strong { display: block; font-family: var(--font-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12.5px; color: var(--muted); }
+.rcards { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.rcard { border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.rhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.rhead strong { overflow-wrap: anywhere; }
+.timeline { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; }
+.timeline b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.demo { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
+kbd { font: inherit; font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface-2); }
+@media (prefers-reduced-motion: no-preference) { .answer, .sugg, .rcards { animation: rise 0.25s ease-out; } @keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } } }
+/* Hub refresh */
+.banner.lede { font-size: 15px; color: var(--ink); max-width: 74ch; }
+.banner.proto { font-size: 12.5px; }
+.tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; border-bottom: 0; overflow: visible; }
+.tab { flex-direction: column; align-items: flex-start; gap: 2px; white-space: normal; text-align: left; margin: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.tab:hover { border-color: var(--accent); }
+.tab[aria-selected="true"] { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+.tab .tt { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 17px; color: var(--ink); }
+.tab .ts { font-size: 12.5px; font-weight: 400; color: var(--muted); }
+.askrow input { padding: 14px 16px; font-size: 16px; }
+.anscard { display: flex; flex-direction: column; gap: 12px; background: var(--surface-2); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px 16px; }
+.stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tab .ts { display: none; } }
+button.stat { font: inherit; color: inherit; text-align: left; cursor: pointer; }
+button.stat:hover { border-color: var(--accent); }
+button.stat[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 -3px 0 var(--accent); }
+.stat.pending strong { color: var(--news); } .stat.approved strong { color: var(--drive); } .stat.declined strong { color: var(--bad); }
+.rcard { border-left-width: 4px; }
+.rcard.pending { border-left-color: var(--news); } .rcard.approved { border-left-color: var(--drive); } .rcard.declined { border-left-color: var(--bad); }
+.tl summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.tl .timeline { margin-top: 6px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; align-items: center; gap: 14px; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
+.toast .link { color: inherit; font-weight: 600; }
+.rhead { gap: 6px 8px; }
+.rhead .brandpill { order: -2; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--ink); background: color-mix(in srgb, var(--b) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--b) 45%, var(--line)); border-radius: 999px; padding: 2px 10px 2px 8px; }
+.rhead .brandpill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--b); }
+.rhead .badge { order: -1; }
+.rhead strong { order: 0; flex-basis: 100%; font-size: 15px; }
+.details dd .contact { display: inline-flex; margin: 0 0 0 10px; vertical-align: middle; }
+.imeta .contact { display: inline-flex; margin: 0; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>HypeMind: Brands-Hub</h1>
+    <button class="tag signup" id="signupBtn" type="button" aria-expanded="false" aria-controls="signupForm">Sign Up with Hypefast Email</button>
+    <span class="asof">Viewing as Marketing team · data as of 22 Oct 2026</span>
+  </header>
+  <form class="panel signupform" id="signupForm" hidden novalidate>
+    <label class="flabel" for="su-email">Hypefast email</label>
+    <div class="askrow">
+      <input id="su-email" type="email" autocomplete="email" placeholder="name@hypefast.id" aria-describedby="su-err">
+      <button class="btn" type="submit">Sign Up</button>
+    </div>
+    <p class="hint" id="su-err">Use your @hypefast.id address. Prototype only, nothing is sent.</p>
+  </form>
+  <p class="banner lede">Every Brand, every launch, every activation, every deck. Just ask.</p>
+  <p class="banner proto">Prototype note: Drive and calendar items, names, emails and request statuses are illustrative samples. News links open real published articles. Social links open the brand’s Instagram until exact post URLs are connected.</p>
+
+  <section class="panel" id="filters" aria-label="Filters">
+    <div class="fbar">
+      <div class="fgroup wide">
+        <span class="flabel" id="brandLabel">Brands</span>
+        <div class="brands" id="brands" role="group" aria-labelledby="brandLabel"></div>
+      </div>
+      <div class="fgroup wide">
+        <span class="flabel" id="projLabel">Special projects</span>
+        <div class="brands" id="projects" role="group" aria-labelledby="projLabel"></div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel" for="topic">Topic</label>
+        <select id="topic"></select>
+      </div>
+      <div class="fgroup">
+        <label class="flabel" for="tf">Time frame</label>
+        <select id="tf"></select>
+        <div class="custom" id="customRange" hidden>
+          <label for="cf">From</label><input type="date" id="cf">
+          <label for="ct">To</label><input type="date" id="ct">
+        </div>
+      </div>
+      <div class="fgroup">
+        <span class="flabel" id="srcLabel">Sources</span>
+        <div class="srcs-row" role="group" aria-labelledby="srcLabel">
+          <label><input type="checkbox" id="t-drive" checked>Google Drive</label>
+          <label><input type="checkbox" id="t-web" checked>Brand Website</label>
+          <label><input type="checkbox" id="t-social" checked>Social Media</label>
+          <label><input type="checkbox" id="t-news" checked>News</label>
+          <label><input type="checkbox" id="t-calendar" checked>Calendar</label>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="scope" id="scope"></p>
+
+  <main class="panel">
+    <div class="tabs" role="tablist" aria-label="Hub mode">
+      <button class="tab" role="tab" id="tabAsk" aria-selected="true" aria-controls="askPane" type="button"><span class="tt">Ask</span><span class="ts">Search across brand sources</span></button>
+      <button class="tab" role="tab" id="tabReq" aria-selected="false" aria-controls="reqPane" type="button"><span class="tt">Requests <span class="count" id="pendingCount" title="Requests waiting for your approval" hidden>0</span></span><span class="ts">Track and approve file access</span></button>
+    </div>
+
+    <section id="askPane" role="tabpanel" aria-labelledby="tabAsk">
+      <form id="askForm" class="askrow">
+        <input id="q" type="text" autocomplete="off" placeholder="Hi! What are you curious about today? Try “Luxcrime holiday launch”" aria-label="Your question">
+        <button class="btn" type="submit">Ask</button>
+      </form>
+      <p class="hint" style="margin-top:6px">Press <kbd>/</kbd> anywhere to jump to the question box.</p>
+      <div class="chips" id="chips"><span class="flabel">Try asking</span></div>
+      <div class="chips tight" id="recent"></div>
+      <div id="answer" aria-live="polite"></div>
+    </section>
+
+    <section id="reqPane" role="tabpanel" aria-labelledby="tabReq" hidden>
+      <div class="seg" id="reqView" role="group" aria-label="Request direction"></div>
+      <p class="hint" id="reqHint" style="margin-top:8px"></p>
+      <div class="stats" id="stats"></div>
+      <div class="rcards" id="rcards"></div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+var REF = '2026-10-22';
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var KINDS = { drive: 'Google Drive', web: 'Brand Website', social: 'Social Media', news: 'News', calendar: 'Calendar' };
+var KIND_KEYS = ['drive', 'web', 'social', 'news', 'calendar'];
+var BRANDS = [
+  { id: 'hf', name: 'Hypefast Group' },
+  { id: 'lux', name: 'Luxcrime' }, { id: 'cessa', name: 'Cessa' }, { id: 'boho', name: 'Bohopanna' },
+  { id: 'koze', name: 'KOZE' }, { id: 'nona', name: 'Nona Rara Batik' }, { id: 'nyonya', name: 'Nyonya Piyama' },
+  { id: 'wsq', name: 'WearStatuQuo' }
+];
+var PROJECTS = [
+  { id: 'hystoric', name: 'HYSTORIC' }, { id: 'hffr', name: 'HFFR', full: 'Hypefast Future Founders Residency' }, { id: 'ibfs', name: 'IBFS', full: 'Indonesia Brand Founders Summit' },
+  { id: 'socialnight', name: 'Social Night' }, { id: 'foundersclub', name: 'The Founders Club' }
+];
+var CATS = [
+  { id: 'press', label: 'Press Release' },
+  { id: 'docs', label: 'Documentation' },
+  { id: 'launch', label: 'Product Launch' },
+  { id: 'csr', label: 'CSR' },
+  { id: 'photoshoot', label: 'Photoshoot' },
+  { id: 'activation', label: 'Activation' },
+  { id: 'event', label: 'Event' },
+  { id: 'deck', label: 'Deck' },
+  { id: 'proposal', label: 'Proposal' },
+  { id: 'partner', label: 'Partnership' },
+  { id: 'guideline', label: 'Guideline' },
+  { id: 'report', label: 'Report' },
+  { id: 'campaign', label: 'Campaign' }
+];
+var TFS = [
+  { id: '7d', label: 'Last 7 days', days: 7 },
+  { id: '14d', label: 'Last 14 days', days: 14 },
+  { id: '30d', label: 'Last 30 days', days: 30 },
+  { id: '60d', label: 'Last 60 days', days: 60 },
+  { id: '90d', label: 'Last 90 days', days: 90 },
+  { id: '6m', label: 'Last 6 months', days: 182 },
+  { id: '12m', label: 'Last 12 months', days: 365 },
+  { id: 'custom', label: 'Custom range', days: 0 }
+];
+var PURPOSES = ['Campaign planning', 'Event planning', 'Reporting', 'Brand guideline check', 'Partner or agency briefing', 'Other'];
+var NEEDS = [
+  { id: '3d', label: 'Within 3 days', d: '2026-10-25' },
+  { id: 'today', label: 'Today', d: REF },
+  { id: 'week', label: 'Within a week', d: '2026-10-29' },
+  { id: 'none', label: 'No rush', d: null }
+];
+var QUESTIONS = [
+  'Where is Luxcrime Skintint Product Photoshoot?',
+  'Documentations Hybrid Sports Bohopanna',
+  'What are Cessa\'s Activations Q4 2025?',
+  'HYSTORIC Athletes Photoshoot File'
+];
+var STOP = ['the', 'and', 'any', 'new', 'what', 'how', 'who', 'for', 'about', 'with', 'have', 'does', 'there', 'their', 'this', 'that', 'from', 'are', 'was', 'our', 'can', 'you', 'latest', 'need', 'before', 'friday', 'one', 'line', 'where', 'each', 'stands', 'while', 'run', 'own', 'draft', 'notes', 'into', 'its', 'has', 'been', 'show', 'tell', 'give', 'get', 'out', 'all', 'sync', 'brand', 'brands', 'find', 'which', 'planned', 'did', 'hit', 'preparing', 'quarter', 'progress', 'coming'];
+
+/* Sample people. Names and emails are placeholders, not real HypePeople. */
+function mk(name, role, handle) {
+  var email = handle + '@hypefast.id';
+  return { name: name, role: role, email: email, chat: 'https://mail.google.com/chat/u/0/#chat/dm/' + email };
+}
+function team(name, role, email) { return { name: name, role: role, email: email, chat: null }; }
+var PEOPLE = {
+  me: { name: 'You', role: 'Marketing Team', email: null, chat: null },
+  dinda: mk('Melisa Andriani', 'Brand General Manager of Luxcrime', 'melisa.andriani'),
+  raka: mk('Raka P.', 'Luxcrime Content Lead', 'raka.p'),
+  nadia: mk('Sally Wiedjarnarko', 'Brand General Manager of Cessa', 'sally.wiedjarnarko'),
+  maya: mk('Lidya Egidius', 'Brand General Manager of Bohopanna', 'lidya.egidius'),
+  fajar: mk('Fajar H.', 'Bohopanna Content Lead', 'fajar.h'),
+  rizky: mk('Rizky A.', 'Finance Business Partner', 'rizky.a'),
+  andre: mk('Andre W.', 'KOZE Brand Manager', 'andre.w'),
+  sinta: mk('Sinta K.', 'KOZE Retail Lead', 'sinta.k'),
+  laras: mk('Adisfia Nur Henrista', 'Brand Manager of Nona Rara Batik', 'adisfia.henrista'),
+  hana: mk('Hana D.', 'Legal Counsel, Partnerships', 'hana.d'),
+  tari: mk('Tari B.', 'Nyonya Piyama Brand Manager', 'tari.b'),
+  kevin: mk('Kevin O.', 'WearStatuQuo Brand Lead', 'kevin.o'),
+  elena: mk('Elena T.', 'Corporate Communications Lead', 'elena.t'),
+  bayu: mk('Bayu N.', 'Events Team Lead', 'bayu.n'),
+  citra: mk('Citra V.', 'People and Culture Partner', 'citra.v'),
+  gita: mk('Gita J.', 'Brand Strategy Lead', 'gita.j'),
+  digital: team('Digital team', 'Marketing', 'digital@hypefast.id'),
+  social: team('Social media team', 'Marketing', 'social@hypefast.id'),
+  media: team('Media monitoring team', 'Corporate Communications', 'mediamonitoring@hypefast.id')
+};
+function who(p) { return p.name + ' (' + p.role + ')'; }
+function firstName(p) { return p.name.split(' ')[0]; }
+
+var KONTAN_THINK = 'https://industri.kontan.co.id/news/hypefast-bagikan-kunci-local-brand-perluas-basis-pelanggan-begini-gambarannya';
+/* Real URLs per item. Items not listed here fall back to socialUrl() or the Drive/Calendar home. Paste exact post or page URLs here. */
+var ITEM_URL = {
+  hf1: 'https://www.hypefast.id/',
+  hn1: KONTAN_THINK, ln1: KONTAN_THINK, kn1: KONTAN_THINK, yn1: KONTAN_THINK,
+  hn2: 'https://industri.kontan.co.id/news/potensi-brand-lokal-makin-meningkat-hypefast-kolaborasi-dengan-lazada-dan-cosmax',
+  hn3: 'https://teknologi.bisnis.com/read/20210817/266/1430800/startup-lokal-hypefast-rayakan-hut-ke-76-ri-di-times-square-new-york',
+  wn1: 'https://newgelora.thejakartapost.com/culture/2022/04/10/wearestatuquo-on-the-fashion-industrys-status-quo',
+  bn1: 'https://industri.kontan.co.id/news/suntik-modal-lebih-rp-300-miliar-hypefast-bawa-5-brand-lokal-ke-pasar-singapura'
+};
+var LUX = 'https://luxcrime.com/', BOHO = 'https://bohopanna.com/';
+Object.assign(ITEM_URL, {
+  lw1: LUX + 'products/luxcrime-perfecting-hydralight-skin-tint-spf-35-pa', lw2: LUX + 'collections/new-products',
+  lw3: LUX + 'collections/bundle', lw4: LUX + 'blogs/blogs', lt1: 'https://www.tiktok.com/@luxcrime_id',
+  bw1: BOHO + 'collections/sportswear', bw2: BOHO + 'collections/new-in', bw3: BOHO + 'collections/raya-collection',
+  bw4: BOHO + 'products/67-sigma-shirt', bw5: BOHO + 'blogs/blogs'
+});
+var IG_PROFILE = { lux: 'https://www.instagram.com/luxcrime_id/' };
+function socialUrl(brand, platform) {
+  if (platform === 'LinkedIn') return 'https://www.linkedin.com/search/results/companies/?keywords=Hypefast';
+  return IG_PROFILE[brand] || 'https://www.instagram.com/explore/search/keyword/?q=' + encodeURIComponent(brandName(brand));
+}
+
+function it(id, brand, kind, cats, title, date, text, where, owner, pic, detail, platform) {
+  var cs = cats.slice();
+  if (/\.pptx$/.test(title) && cs.indexOf('deck') === -1) cs.push('deck');
+  var ft = kind === 'web' ? 'Web page' : kind === 'social' ? 'Social post' : kind === 'news' ? 'News article' : kind === 'calendar' ? 'Calendar event' :
+    /\.pptx$/.test(title) ? 'Deck' : /\.xlsx$/.test(title) ? 'Sheet' : /\.pdf$/.test(title) ? 'PDF' : 'Doc';
+  var url = ITEM_URL[id] || (kind === 'social' ? socialUrl(brand, platform) : kind === 'drive' ? 'https://drive.google.com/' : kind === 'calendar' ? 'https://calendar.google.com/' : null);
+  return {
+    id: id, brand: brand, kind: kind, cats: cs, title: title, date: date, text: text, where: where, ftype: ft, platform: platform || null, url: url,
+    owner: PEOPLE[owner], pic: pic ? PEOPLE[pic] : null, detail: detail || null, access: pic ? 'restricted' : 'open'
+  };
+}
+
+var ITEMS = [
+  /* Hypefast Group */
+  it('hf1', 'hf', 'web', ['press'], 'Hypefast Group Q3 Update (press release)', '2026-10-05', 'Q3 update covers progress across the Hypefast brands, new retail partnerships and priorities for the final quarter.', 'Brand website / Press room', 'elena'),
+  it('hf2', 'hf', 'drive', ['docs'], 'Hypefast Brand Portfolio Overview', '2026-09-02', 'One-page overview of every brand, its audience and its owner, for onboarding and partner conversations.', 'Drive / Hypefast Group / Overview', 'gita'),
+  it('hf3', 'hf', 'calendar', ['event'], 'HypePeople All-Hands: Q4 Kickoff', '2026-10-15', 'Company-wide session on 29 Oct covering Q4 priorities, brand wins and launches.', 'Calendar / Hypefast Group events', 'bayu'),
+  it('hf4', 'hf', 'drive', ['proposal', 'event'], 'Hypefast Group Year-End Gathering Proposal.pptx', '2026-10-17', 'Proposal for the year-end gathering with venue options and a draft programme. Budget detail is restricted.', 'Drive / Hypefast Group / Events', 'bayu', 'bayu', 'Two venues are shortlisted. The draft programme combines brand showcases with a team dinner, and the budget sits within the Group events line.'),
+  it('hf5', 'hf', 'calendar', ['event'], 'Brand Onboarding Session for New HypePeople', '2026-10-19', 'Session on 5 Nov introducing each brand to new HypePeople, with a Q&A with brand leads.', 'Calendar / People and Culture', 'citra'),
+  it('hf6', 'hf', 'drive', ['docs', 'guideline'], 'Brand Asset Library Guide', '2026-08-14', 'How to find approved logos, templates and photography for every brand.', 'Drive / Hypefast Group / Brand assets', 'gita'),
+  it('hf7', 'hf', 'drive', ['docs'], 'Parent Brand Positioning Deck (v3).pptx', '2026-10-10', 'Positioning deck for the Hypefast parent brand. Restricted to the marketing team.', 'Drive / Hypefast Group / Brand strategy', 'me', 'me', 'Positioning centres on one Hypefast promise across the brands, with proof points drawn from the portfolio and a consistent tone of voice.'),
+  it('hf8', 'hf', 'drive', ['report'], 'Think with Hypefast Research Data.xlsx', '2026-10-16', 'Survey data behind the Think with Hypefast series. Raw data is restricted.', 'Drive / Hypefast Group / Research', 'me', 'me', 'The latest survey covers consumer habits across the portfolio categories, with results split by age group and city.'),
+  it('hf9', 'hf', 'drive', ['csr', 'report'], 'Hypefast Group CSR Report 2026.pdf', '2026-09-15', 'Annual report summarising the community programmes run across the brands.', 'Drive / Hypefast Group / CSR', 'elena'),
+  it('hf10', 'hf', 'social', ['press'], 'Hypefast Group LinkedIn: Q3 update post', '2026-10-06', 'Post shares the Q3 update with a short note on priorities for the final quarter.', 'LinkedIn, public page', 'social', null, null, 'LinkedIn'),
+
+  /* Real news coverage (paraphrased summaries, links open the published article) */
+  it('hn1', 'hf', 'news', ['report', 'press'], 'Hypefast Bagikan Kunci Local Brand Perluas Basis Pelanggan (Kontan)', '2024-10-04', 'Coverage of the Think with Hypefast research from September 2024. Around nine in ten respondents had bought a local brand in the past three months, and limited brand information is the main reason shoppers hesitate.', 'Kontan.co.id, Industri', 'media'),
+  it('hn2', 'hf', 'news', ['partner', 'press'], 'Hypefast Kolaborasi dengan Lazada dan Cosmax (Kontan)', '2023-11-29', 'Hypefast announced a long-term collaboration with Lazada Indonesia and Cosmax on 29 Nov 2023, built around a Joint Business Plan between Lazada and the Hypefast brands.', 'Kontan.co.id, Industri', 'media'),
+  it('hn3', 'hf', 'news', ['campaign', 'press'], 'Startup Lokal Hypefast, Rayakan HUT Ke-76 RI di Times Square New York (Bisnis.com)', '2021-08-17', 'Hypefast featured 16 local brands on a Times Square screen to mark Indonesian Independence Day in 2021.', 'Bisnis.com, Teknologi', 'media'),
+  it('ln1', 'lux', 'news', ['report'], 'Luxcrime cited in Think with Hypefast coverage (Kontan)', '2024-10-04', 'The Kontan piece names Luxcrime as an example of a beauty brand offering more inclusive shade ranges for local consumers.', 'Kontan.co.id, Industri', 'media'),
+  it('kn1', 'koze', 'news', ['report'], 'KOZE cited in Think with Hypefast coverage (Kontan)', '2024-10-04', 'The Kontan piece names KOZE, with Nyonya Piyama, as brands that adjust sizing to local body shapes.', 'Kontan.co.id, Industri', 'media'),
+  it('yn1', 'nyonya', 'news', ['report'], 'Nyonya Piyama cited in Think with Hypefast coverage (Kontan)', '2024-10-04', 'The Kontan piece names Nyonya Piyama, with KOZE, as brands that adjust sizing to local body shapes.', 'Kontan.co.id, Industri', 'media'),
+  it('wn1', 'wsq', 'news', ['press'], 'Wearstatuquo on the fashion industry’s status quo (The Jakarta Post)', '2022-04-10', 'Profile of the label’s founders, who studied in Australia, and how the brand grew with Hypefast and collaborations with other local brands and Disney.', 'The Jakarta Post, Culture', 'media'),
+  it('bn1', 'boho', 'news', ['event', 'press'], 'Suntik Modal Lebih Rp 300 Miliar, Hypefast Bawa 5 Brand Lokal ke Pasar Singapura (Kontan)', '2022-07-08', 'BohoPanna was among five Hypefast brands at Mummy Market Baby Fair 2022 in Singapore, shown under the Buiboo retail banner.', 'Kontan.co.id, Industri', 'media'),
+
+  /* Brand websites (live pages on luxcrime.com and bohopanna.com) and extra socials */
+  it('lw1', 'lux', 'web', ['launch', 'campaign'], 'Luxcrime Perfecting Hydralight Skin Tint SPF 35 PA+++ (product page)', '2026-10-22', 'Product page for the skin tint, listed under New Products on the Luxcrime store with several shades.', 'luxcrime.com / Products', 'digital'),
+  it('lw2', 'lux', 'web', ['launch'], 'Luxcrime New Products collection', '2026-10-22', 'Store collection showing the latest Luxcrime launches, including the skin tint, setting powder and blush.', 'luxcrime.com / Collections', 'digital'),
+  it('lw3', 'lux', 'web', ['campaign'], 'Luxcrime Bundle collection', '2026-10-22', 'Bundle offers on the Luxcrime store, such as blush and contour duos.', 'luxcrime.com / Collections', 'digital'),
+  it('lw4', 'lux', 'web', ['docs'], 'Luxcrime Blog', '2026-10-22', 'Luxcrime blog on the brand store.', 'luxcrime.com / Blog', 'digital'),
+  it('lt1', 'lux', 'social', ['campaign'], 'Luxcrime TikTok: official account', '2026-10-19', 'Luxcrime’s TikTok account for short-form product content.', 'TikTok, public account', 'social', null, null, 'TikTok'),
+  it('bw1', 'boho', 'web', ['launch', 'campaign'], 'Bohopanna Sportswear collection', '2026-10-22', 'Store collection for kids’ sportswear, including jerseys, skirted leggings and sport bras.', 'bohopanna.com / Collections', 'digital'),
+  it('bw2', 'boho', 'web', ['launch'], 'Bohopanna New In collection', '2026-10-22', 'Latest arrivals on the Bohopanna store across baby, boy and girl ranges.', 'bohopanna.com / Collections', 'digital'),
+  it('bw3', 'boho', 'web', ['campaign'], 'Bohopanna Raya Collection', '2026-10-22', 'Seasonal collection page on the Bohopanna store.', 'bohopanna.com / Collections', 'digital'),
+  it('bw4', 'boho', 'web', ['launch'], 'Bohopanna 67 Collection: Sigma Shirt (product page)', '2026-10-22', 'Featured as a new collection on the Bohopanna homepage.', 'bohopanna.com / Products', 'digital'),
+  it('bw5', 'boho', 'web', ['docs'], 'Bohopanna Blog', '2026-10-22', 'Bohopanna blog on the brand store.', 'bohopanna.com / Blog', 'digital'),
+
+  /* Sample files for the Try asking questions */
+  it('l9', 'lux', 'drive', ['photoshoot'], 'Luxcrime Skintint Product Photoshoot', '2026-10-02', 'Shot list, shade line-up and styling notes for the skin tint product shoot. Raw files sit in the Creative folder.', 'Drive / Brands / Luxcrime / Creative / Skintint', 'raka'),
+  it('b7', 'boho', 'drive', ['docs'], 'Bohopanna Hybrid Sports Documentation', '2026-09-18', 'Documentation for the Hybrid Sports line, covering the brief, product range, key messages and content guidelines.', 'Drive / Brands / Bohopanna / Sports', 'fajar'),
+  it('c7', 'cessa', 'drive', ['activation', 'proposal'], 'Cessa Q4 2025 Activation Plan.pptx', '2025-10-08', 'Plan for the Q4 2025 activations, with schedule, locations and goals. Budget detail is restricted.', 'Drive / Brands / Cessa / Events', 'nadia', 'nadia', 'Activations run from October to December across partner stores, with a holiday pop-up as the closing moment.'),
+  it('c8', 'cessa', 'calendar', ['activation', 'event'], 'Cessa Holiday Pop-up (Q4 2025)', '2025-11-12', 'Holiday pop-up activation held in Q4 2025 with product trials and a gift with purchase.', 'Calendar / Cessa events', 'nadia'),
+
+  /* Special projects */
+  it('sp1', 'hystoric', 'drive', ['photoshoot'], 'HYSTORIC Athletes Photoshoot File', '2026-10-12', 'Shot list, athlete line-up and call times for the HYSTORIC athletes shoot. Restricted to the project team.', 'Drive / Special Projects / HYSTORIC / Creative', 'raka', 'bayu', 'Athletes are scheduled in blocks across one shoot day, with outfit changes and a short behind-the-scenes capture.'),
+  it('sp2', 'hystoric', 'calendar', ['event'], 'HYSTORIC Athletes Shoot Day', '2026-10-13', 'Shoot day on 4 Nov with athletes, stylists and the content team.', 'Calendar / HYSTORIC', 'bayu'),
+  it('sp3', 'hffr', 'drive', ['docs'], 'HFFR Programme Overview', '2026-10-09', 'Overview of the Hypefast Future Founders Residency, a programme for aspiring entrepreneurs. Hypefast provides capital, a business idea, networks and the resources needed. Applications are closed and all submissions are under review.', 'Drive / Special Projects / HFFR', 'elena'),
+  it('sp4', 'hffr', 'drive', ['deck', 'report'], 'HFFR Application Review Pack.pptx', '2026-10-15', 'Pack for the HFFR applications now under review. Restricted to the review panel.', 'Drive / Special Projects / HFFR', 'elena', 'elena', 'Applications are closed. Submissions are grouped for panel review and no decisions have been announced yet.'),
+  it('sp5', 'ibfs', 'drive', ['docs', 'partner'], 'IBFS Participation Brief', '2026-09-30', 'Brief for brands taking part in the Indonesia Brand Founders Summit (IBFS), the conference for local consumer brands in Southeast Asia hosted and organised by Hypefast. Covers goals, roles and deadlines.', 'Drive / Special Projects / IBFS', 'gita'),
+  it('sp6', 'ibfs', 'drive', ['activation', 'proposal'], 'IBFS Booth Plan.pptx', '2026-10-11', 'Booth layout, staffing and brand mix for the Hypefast presence at IBFS.', 'Drive / Special Projects / IBFS', 'bayu'),
+  it('sp7', 'socialnight', 'drive', ['event', 'proposal'], 'Social Night Event Proposal.pptx', '2026-10-17', 'Proposal for Social Night with venue, programme and guest list. Budget detail is restricted.', 'Drive / Special Projects / Social Night', 'bayu', 'bayu', 'Evening format with a short programme, brand showcases and networking time.'),
+  it('sp8', 'socialnight', 'calendar', ['event'], 'Social Night Run-through', '2026-10-18', 'Internal run-through of the Social Night programme.', 'Calendar / Social Night', 'bayu'),
+  it('sp9', 'foundersclub', 'drive', ['docs', 'partner'], 'The Founders Club Member Programme', '2026-10-05', 'Overview of the programme for The Founders Club members and how sessions are run.', 'Drive / Special Projects / Founders Club', 'gita'),
+  it('sp10', 'foundersclub', 'drive', ['report', 'event'], 'The Founders Club Session Recap', '2026-10-19', 'Recap of the latest Founders Club session with key takeaways and follow-ups.', 'Drive / Special Projects / Founders Club', 'gita'),
+
+  /* Luxcrime */
+  it('l1', 'lux', 'web', ['press', 'launch'], 'Luxcrime Announces Holiday Collection (press release)', '2026-10-20', 'Press release introduces the holiday collection and confirms an online launch in mid-November.', 'Brand website / Press', 'digital'),
+  it('l2', 'lux', 'drive', ['launch'], 'Luxcrime Holiday Collection Launch Plan.pptx', '2026-10-14', 'Launch plan for the holiday collection with milestones from teaser to in-store. Detail is restricted.', 'Drive / Brands / Luxcrime / Launches', 'dinda', 'dinda', 'Teasers start in early November, the collection goes live online mid-November and reaches stores before the year-end shopping peak.'),
+  it('l3', 'lux', 'calendar', ['activation', 'event'], 'Luxcrime Pop-up Counter, Jakarta Mall', '2026-10-09', 'Three-day pop-up counter from 7 Nov with product trials and a creator meet-up.', 'Calendar / Luxcrime events', 'raka'),
+  it('l4', 'lux', 'drive', ['proposal', 'activation', 'event'], 'Luxcrime Pop-up Activation Proposal.pptx', '2026-10-10', 'Proposal covering location, booth design, staffing and goals for the pop-up. Budget detail is restricted.', 'Drive / Brands / Luxcrime / Events', 'raka', 'dinda', 'Booth design follows the holiday look, with trial stations, a photo corner and two staffed shifts a day. Budget is split between build, staffing and creator fees.'),
+  it('l5', 'lux', 'drive', ['guideline'], 'Luxcrime Brand Guidelines v2.pdf', '2026-04-12', 'Guidelines set a bold, confident tone with clear rules for logo use and photography.', 'Drive / Brands / Luxcrime / Guidelines', 'dinda'),
+  it('l6', 'lux', 'drive', ['photoshoot'], 'Luxcrime Holiday Photoshoot Moodboard.pptx', '2026-10-18', 'Moodboard sets the look, locations and styling direction for the holiday shoot.', 'Drive / Brands / Luxcrime / Creative', 'raka'),
+  it('l7', 'lux', 'social', ['launch', 'campaign'], 'Luxcrime Instagram: Holiday collection teaser', '2026-10-21', 'Teaser post introduces the holiday collection ahead of the mid-November launch.', 'Instagram, public account', 'social', null, null, 'Instagram'),
+  it('l8', 'lux', 'drive', ['campaign'], 'Luxcrime Q4 Campaign Brief', '2026-10-08', 'Q4 campaign leads with creator-first content and retail visibility, carrying one key message across channels.', 'Drive / Brands / Luxcrime / Campaigns', 'raka'),
+
+  /* Cessa */
+  it('c1', 'cessa', 'drive', ['launch'], 'Cessa Launch Timeline', '2026-10-03', 'Next product drop is set for early Q1, with content shoots planned for December.', 'Drive / Brands / Cessa / Product', 'nadia'),
+  it('c2', 'cessa', 'drive', ['guideline'], 'Cessa Brand Guidelines 2026.pdf', '2026-08-19', 'Guidelines cover logo, colour and tone of voice. Detail is restricted.', 'Drive / Brands / Cessa / Guidelines', 'nadia', 'nadia', 'Tone is warm and understated, photography favours natural light and simple backgrounds, and the logo needs clear space on all sides.'),
+  it('c3', 'cessa', 'web', ['press'], 'Cessa Online Store Redesign Goes Live (press release)', '2026-09-24', 'Redesigned online store is live, with a simpler checkout and clearer product pages.', 'Brand website / Press', 'digital'),
+  it('c4', 'cessa', 'calendar', ['event'], 'Cessa Partner Preview Evening', '2026-10-12', 'Invite-only preview on 12 Nov of the next collection for retail partners and press.', 'Calendar / Cessa events', 'nadia'),
+  it('c5', 'cessa', 'drive', ['report'], 'Cessa Q3 Brand Review.pptx', '2026-09-12', 'Quarterly brand review for Cessa. Figures are restricted.', 'Drive / Brands / Cessa / Reports', 'nadia', 'nadia', 'Cessa closed the quarter ahead of plan on online sales, with the strongest gains in repeat customers.'),
+  it('c6', 'cessa', 'drive', ['photoshoot'], 'Cessa December Photoshoot Brief', '2026-10-17', 'Brief covers the shot list, locations and model casting for the December shoot.', 'Drive / Brands / Cessa / Creative', 'nadia'),
+
+  /* Bohopanna */
+  it('b1', 'boho', 'drive', ['campaign'], 'Bohopanna Season Plan', '2026-10-15', 'Season plan outlines collection drops, key dates and campaign priorities through December.', 'Drive / Brands / Bohopanna / Planning', 'fajar'),
+  it('b2', 'boho', 'drive', ['docs'], 'Bohopanna Pricing Sheet 2026.xlsx', '2026-06-02', 'Pricing reference for the current range. Restricted to finance.', 'Drive / Finance / Pricing', 'maya', 'rizky', 'Pricing follows three tiers across the range, with seasonal markdown rules held in a separate tab.'),
+  it('b3', 'boho', 'calendar', ['activation', 'event'], 'Bohopanna Weekend Market Booth', '2026-10-16', 'Booth on 21 Nov at a weekend lifestyle market with a limited-edition bundle.', 'Calendar / Bohopanna events', 'fajar'),
+  it('b4', 'boho', 'drive', ['activation', 'event'], 'Bohopanna Market Booth Brief', '2026-10-14', 'Brief for the market booth with layout, bundle, staffing roster and setup checklist.', 'Drive / Brands / Bohopanna / Events', 'fajar'),
+  it('b6', 'boho', 'social', ['activation', 'event'], 'Bohopanna Instagram: Market booth announcement', '2026-10-19', 'Post announces the weekend market booth and the limited-edition bundle.', 'Instagram, public account', 'social', null, null, 'Instagram'),
+
+  /* KOZE */
+  it('k1', 'koze', 'drive', ['guideline'], 'KOZE Brand Guidelines v1.pdf', '2026-03-10', 'First version of the guidelines sets logo rules, colour use and photography style.', 'Drive / Brands / KOZE / Guidelines', 'andre'),
+  it('k2', 'koze', 'drive', ['docs'], 'KOZE Retail Partner Brief', '2026-09-28', 'Brief explains the key message, display rules and who to contact for sales support.', 'Drive / Brands / KOZE / Retail', 'sinta'),
+  it('k3', 'koze', 'drive', ['launch'], 'KOZE Launch Plan H1 2027.pptx', '2026-10-19', 'Early plan for next year\'s launch window. Restricted while under review.', 'Drive / Brands / KOZE / Launch', 'andre', 'andre', 'Plan targets a first-half launch, with a teaser phase six weeks ahead and creator seeding in the final two weeks.'),
+  it('k4', 'koze', 'calendar', ['event'], 'KOZE Retail Partner Workshop', '2026-10-13', 'Half-day workshop on 3 Nov for retail partners on display standards and product knowledge.', 'Calendar / KOZE events', 'sinta'),
+  it('k5', 'koze', 'web', ['press', 'partner'], 'KOZE Completes First Retail Partner Programme (press release)', '2026-09-30', 'First retail partner programme wraps up, with every partner trained on display standards.', 'Brand website / Press', 'digital'),
+  it('k7', 'koze', 'drive', ['csr'], 'KOZE Community Clean-up Day Plan', '2026-10-07', 'Plan for a volunteer clean-up day programme with partner stores, covering locations and volunteer sign-up.', 'Drive / Brands / KOZE / CSR', 'andre'),
+
+  /* Nona Rara Batik */
+  it('n1', 'nona', 'drive', ['guideline'], 'Nona Rara Batik: Heritage Storytelling Guide', '2026-05-20', 'Guide anchors posts in motif origin stories and keeps the tone warm and proud.', 'Drive / Brands / Nona Rara Batik / Guidelines', 'laras'),
+  it('n2', 'nona', 'calendar', ['event'], 'Nona Rara Batik Artisan Showcase', '2026-10-11', 'Showcase evening on 14 Nov with partner artisans, live batik demonstrations and a styling talk.', 'Calendar / Nona Rara Batik events', 'laras'),
+  it('n3', 'nona', 'drive', ['proposal', 'event'], 'Artisan Showcase Event Proposal.pptx', '2026-10-09', 'Proposal for the artisan showcase covering venue, programme and guest list. Budget detail is restricted.', 'Drive / Brands / Nona Rara Batik / Events', 'laras', 'laras', 'Venue is a heritage gallery space. The programme mixes demonstrations with a short fashion presentation, and guests include partners, press and loyal customers.'),
+  it('n4', 'nona', 'drive', ['partner'], 'Nona Rara Batik Artisan Partnership Terms.docx', '2026-08-05', 'Terms for artisan collaborations. Restricted to legal and brand leads.', 'Drive / Legal / Partnerships', 'laras', 'hana', 'Terms cover production timelines, motif ownership and a fair-payment schedule.'),
+  it('n5', 'nona', 'web', ['press', 'partner'], 'Batik Day Marks Largest Artisan Collaboration Yet (press release)', '2026-10-02', 'Batik Day on 2 October marked the brand\'s largest artisan collaboration to date.', 'Brand website / Press', 'digital'),
+  it('n7', 'nona', 'drive', ['csr'], 'Nona Rara Batik Artisan Community Programme', '2026-09-10', 'Programme supports artisan families with skills training and fair-payment schedules.', 'Drive / Brands / Nona Rara Batik / CSR', 'laras'),
+
+  /* Nyonya Piyama */
+  it('y1', 'nyonya', 'drive', ['report'], 'Nyonya Piyama Q3 Brand Review.pptx', '2026-09-20', 'Q3 review shows the campaign met its awareness goal and sets priorities for Q4.', 'Drive / Brands / Nyonya Piyama / Reports', 'tari'),
+  it('y2', 'nyonya', 'drive', ['launch'], 'Nyonya Piyama New Collection Launch Brief', '2026-10-01', 'Brief for the next collection covering positioning, key dates and retail readiness.', 'Drive / Brands / Nyonya Piyama / Launches', 'tari'),
+  it('y3', 'nyonya', 'calendar', ['activation', 'event'], 'Nyonya Piyama In-store Event', '2026-10-14', 'In-store event on 15 Nov with product demos and a gift with purchase.', 'Calendar / Nyonya Piyama events', 'tari'),
+  it('y4', 'nyonya', 'drive', ['event', 'activation'], 'In-store Event Run Sheet.xlsx', '2026-10-18', 'Run sheet with schedule, staffing and supplier contacts for the in-store event. Contact details are restricted.', 'Drive / Brands / Nyonya Piyama / Events', 'tari', 'tari', 'Run sheet lists hour-by-hour tasks, staffing by store and supplier contacts for decor and sampling.'),
+  it('y5', 'nyonya', 'web', ['press', 'campaign'], 'Nyonya Piyama Q3 Campaign Meets Awareness Goal (press release)', '2026-09-30', 'The Q3 campaign met its awareness goal ahead of the quarter close.', 'Brand website / Press', 'digital'),
+  it('y6', 'nyonya', 'drive', ['photoshoot'], 'Nyonya Piyama Collection Lookbook Shoot Brief', '2026-10-05', 'Brief for the lookbook shoot with shot list, styling notes and timeline.', 'Drive / Brands / Nyonya Piyama / Creative', 'tari'),
+  it('y7', 'nyonya', 'social', ['launch', 'campaign'], 'Nyonya Piyama Instagram: New collection announcement', '2026-10-20', 'Post announces the new collection and points followers to the launch date.', 'Instagram, public account', 'social', null, null, 'Instagram'),
+
+  /* WearStatuQuo */
+  it('w1', 'wsq', 'drive', ['guideline'], 'WearStatuQuo Brand Guidelines v3.pdf', '2026-06-18', 'Version 3 tightens logo rules and adds a section on collaboration co-branding.', 'Drive / Brands / WearStatuQuo / Guidelines', 'kevin'),
+  it('w2', 'wsq', 'drive', ['partner', 'proposal'], 'WearStatuQuo Collab Proposal.pptx', '2026-10-11', 'Proposal for a limited collaboration. Restricted until partner terms are agreed.', 'Drive / Brands / WearStatuQuo / Collabs', 'kevin', 'kevin', 'Proposal outlines a limited drop with a shared campaign window and a joint launch event.'),
+  it('w3', 'wsq', 'calendar', ['launch', 'event'], 'WearStatuQuo Limited Drop Launch Day', '2026-10-14', 'Limited drop goes live on 20 Nov online and in selected stores.', 'Calendar / WearStatuQuo events', 'kevin'),
+  it('w4', 'wsq', 'drive', ['activation', 'launch'], 'WearStatuQuo Drop Day Activation Plan.pptx', '2026-10-20', 'Plan for the drop-day store activation covering queue management, merchandise and photo moments.', 'Drive / Brands / WearStatuQuo / Events', 'kevin'),
+  it('w5', 'wsq', 'web', ['press', 'partner'], 'WearStatuQuo Ships Its First Collaboration (press release)', '2026-08-28', 'First collaboration piece shipped to customers on schedule.', 'Brand website / Press', 'digital'),
+  it('w7', 'wsq', 'social', ['launch'], 'WearStatuQuo Instagram: Limited drop teaser', '2026-10-21', 'Teaser post counts down to the limited drop on 20 Nov.', 'Instagram, public account', 'social', null, null, 'Instagram'),
+  it('w8', 'wsq', 'drive', ['photoshoot'], 'WearStatuQuo Drop Lookbook Shoot Schedule', '2026-10-12', 'Schedule for the lookbook shoot with locations, call times and styling teams.', 'Drive / Brands / WearStatuQuo / Creative', 'kevin')
+];
+
+var state = {
+  mode: 'ask',
+  brand: 'all',
+  topic: 'all',
+  tf: '30d',
+  custom: { from: '2026-09-01', to: REF },
+  enabled: { drive: true, web: true, social: true, news: true, calendar: true },
+  query: '',
+  token: 0,
+  openForm: null,
+  openBulk: false,
+  openDetail: {},
+  msgDirty: false,
+  recent: [],
+  fb: {},
+  gaps: [],
+  reqView: 'out',
+  reqFilter: 'all',
+  declineOpen: null,
+  nextReq: 4,
+  fw: { purpose: null, brand: null, audience: null },
+  requests: [
+    { id: 'r1', dir: 'out', itemId: 'l2', status: 'pending', purpose: 'Campaign planning', message: 'Need the launch milestones to line up our Q4 parent-brand content with the holiday teasers.', sent: '2026-10-20', neededBy: '2026-10-23', remindedOn: null, reason: null,
+      events: [{ d: '2026-10-20', t: 'Request sent to Melisa Andriani' }] },
+    { id: 'r2', dir: 'out', itemId: 'c2', status: 'approved', purpose: 'Brand guideline check', sent: '2026-10-15', neededBy: '2026-10-20', remindedOn: null, reason: null,
+      events: [{ d: '2026-10-15', t: 'Request sent to Sally Wiedjarnarko' }, { d: '2026-10-16', t: 'Approved by Sally Wiedjarnarko' }] },
+    { id: 'r3', dir: 'out', itemId: 'b2', status: 'declined', purpose: 'Reporting', sent: '2026-10-12', neededBy: null, remindedOn: null, reason: 'Finance-only file. Please use the pricing summary in the brand deck.',
+      events: [{ d: '2026-10-12', t: 'Request sent to Rizky A.' }, { d: '2026-10-13', t: 'Declined by Rizky A.' }] },
+    { id: 'i1', dir: 'in', itemId: 'hf7', from: 'dinda', status: 'pending', purpose: 'Brand guideline check', message: 'Could I review the positioning deck before our Q4 campaign sign-off?', sent: '2026-10-21', neededBy: '2026-10-23', expires: null, reason: null,
+      events: [{ d: '2026-10-21', t: 'Request received from Melisa Andriani' }] },
+    { id: 'i2', dir: 'in', itemId: 'hf8', from: 'nadia', status: 'pending', purpose: 'Reporting', message: 'I would like to use the survey findings in our Q3 brand review.', sent: '2026-10-19', neededBy: '2026-10-26', expires: null, reason: null,
+      events: [{ d: '2026-10-19', t: 'Request received from Sally Wiedjarnarko' }] },
+    { id: 'i3', dir: 'in', itemId: 'hf7', from: 'kevin', status: 'approved', purpose: 'Partner or agency briefing', message: 'Need the deck for the collaboration brief.', sent: '2026-10-13', neededBy: null, expires: '2026-11-13', reason: null,
+      events: [{ d: '2026-10-13', t: 'Request received from Kevin O.' }, { d: '2026-10-14', t: 'Approved by you for 30 days' }] },
+    { id: 'i4', dir: 'in', itemId: 'hf8', from: 'tari', status: 'declined', purpose: 'Reporting', message: 'Can I use the raw numbers in a campaign recap?', sent: '2026-10-09', neededBy: null, expires: null, reason: 'Raw data is limited to the research team. Please use the published summary.',
+      events: [{ d: '2026-10-09', t: 'Request received from Tari B.' }, { d: '2026-10-10', t: 'Declined by you' }] }
+  ]
+};
+
+function $(id) { return document.getElementById(id); }
+function h(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function btn(label, cls, fn) {
+  var b = h('button', cls, label);
+  b.type = 'button';
+  b.addEventListener('click', fn);
+  return b;
+}
+function ext(href, text, cls) {
+  var a = h('a', cls || null, text);
+  a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  return a;
+}
+function fmt(iso) {
+  var p = iso.split('-');
+  return parseInt(p[2], 10) + ' ' + MONTHS[parseInt(p[1], 10) - 1] + ' ' + p[0];
+}
+function addDays(iso, n) {
+  var p = iso.split('-');
+  return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)).toISOString().slice(0, 10);
+}
+function daysBetween(a, b) {
+  function t(s) { var p = s.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  return Math.round((t(b) - t(a)) / 86400000);
+}
+function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+function brandName(id) { var L = BRANDS.concat(PROJECTS); for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i].name; return id; }
+function catLabel(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].label; return id; }
+function tfObj() { for (var i = 0; i < TFS.length; i++) if (TFS[i].id === state.tf) return TFS[i]; return TFS[2]; }
+function itemById(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
+function needDate(id) { for (var i = 0; i < NEEDS.length; i++) if (NEEDS[i].id === id) return NEEDS[i].d; return null; }
+function bounds() {
+  var lo, hi;
+  if (state.tf === 'custom') { lo = state.custom.from || '0000-00-00'; hi = state.custom.to || '9999-99-99'; }
+  else { lo = addDays(REF, -tfObj().days); hi = REF; }
+  return lo <= hi ? { from: lo, to: hi } : { from: hi, to: lo };
+}
+function tfText() {
+  if (state.tf === 'custom') { var b = bounds(); return fmt(b.from) + ' to ' + fmt(b.to); }
+  return tfObj().label;
+}
+function dateLabel(x) {
+  var w = x.kind === 'drive' ? 'Updated ' : x.kind === 'social' ? 'Posted ' : x.kind === 'calendar' ? 'Added to calendar ' : x.kind === 'web' && x.cats.indexOf('press') === -1 ? 'Checked ' : 'Published ';
+  return w + fmt(x.date);
+}
+function catsText(x) { return x.cats.map(catLabel).join(' · '); }
+
+function copyText(text, b, fail) {
+  function done() { var old = b.textContent; b.textContent = 'Copied'; setTimeout(function () { b.textContent = old; }, 1500); }
+  function bad() { if (fail) fail(); else { var old = b.textContent; b.textContent = 'Select to copy'; setTimeout(function () { b.textContent = old; }, 1800); } }
+  try { navigator.clipboard.writeText(text).then(done, bad); } catch (e) { bad(); }
+}
+function contactLine(p) {
+  var d = h('div', 'contact');
+  if (!p.email) { d.appendChild(h('span', null, 'That is you')); return d; }
+  var a = h('a', null, p.email); a.href = 'mailto:' + p.email; d.appendChild(a);
+  d.appendChild(btn('Copy', 'link', function (ev) { copyText(p.email, ev.currentTarget); }));
+  if (p.chat) d.appendChild(ext(p.chat, 'Google Chat ↗'));
+  return d;
+}
+
+/* Search helpers */
+function stem(w) {
+  w = w.toLowerCase();
+  if (w.length > 4 && /(ch|sh|s|x|z)es$/.test(w)) return w.slice(0, -2);
+  if (w.length > 3 && w.slice(-1) === 's' && w.slice(-2) !== 'ss') return w.slice(0, -1);
+  return w;
+}
+function tokens(text) {
+  var m = text.toLowerCase().match(/[a-z]+/g) || [];
+  return m.filter(function (w) { return w.length >= 3 && STOP.indexOf(w) === -1; }).map(stem);
+}
+function tokMatch(a, b) {
+  return a === b || (a.length >= 6 && b.length >= 6 && a.slice(0, 6) === b.slice(0, 6));
+}
+function hasTok(list, t) { return list.some(function (x) { return tokMatch(t, x); }); }
+ITEMS.forEach(function (x) {
+  x.tagT = tokens(x.cats.map(catLabel).join(' ') + ' ' + KINDS[x.kind] + (x.platform ? ' ' + x.platform : ''));
+  x.titleT = tokens(x.title);
+  x.textT = tokens(x.text);
+});
+function scoreItem(x, qt, qText) {
+  var s = 0;
+  qt.forEach(function (t) {
+    if (hasTok(x.tagT, t)) s += 3;
+    else if (hasTok(x.titleT, t)) s += 2;
+    else if (hasTok(x.textT, t)) s += 1;
+  });
+  if (qText.indexOf(brandName(x.brand).toLowerCase()) !== -1) s += 3;
+  return s;
+}
+function byScoreThenDate(a, b) { return b.s - a.s || (a.it.date < b.it.date ? 1 : -1); }
+/* A question that names a brand or project only returns that brand's items. */
+var ALIASES = {
+  hf: ['hypefast group', 'hypefast'], lux: ['luxcrime'], cessa: ['cessa'], boho: ['bohopanna', 'boho panna', 'boho'],
+  koze: ['koze'], nona: ['nona rara batik', 'nona rara', 'nona'], nyonya: ['nyonya piyama', 'nyonya'],
+  wsq: ['wearstatuquo', 'wear statuquo', 'wear status quo', 'statuquo', 'wsq'],
+  hystoric: ['hystoric'], hffr: ['hffr', 'future founders residency'], ibfs: ['ibfs', 'indonesia brand founders summit'],
+  socialnight: ['social night'], foundersclub: ['founders club']
+};
+function namedBrands(text) {
+  var q = ' ' + text.toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+  return Object.keys(ALIASES).filter(function (id) {
+    return ALIASES[id].some(function (a) { return q.indexOf(' ' + a + ' ') !== -1; });
+  });
+}
+function rank(text, pool) {
+  var qt = tokens(text), q = text.toLowerCase();
+  var named = namedBrands(text);
+  if (named.length) pool = pool.filter(function (x) { return named.indexOf(x.brand) !== -1; });
+  return pool.map(function (x) { return { it: x, s: scoreItem(x, qt, q) }; }).filter(function (r) { return r.s > 0; }).sort(byScoreThenDate);
+}
+
+/* Filters */
+function anySource() { return KIND_KEYS.some(function (k) { return state.enabled[k]; }); }
+function inScope(x) {
+  var b = bounds();
+  return (state.brand === 'all' || x.brand === state.brand) && (state.topic === 'all' || x.cats.indexOf(state.topic) !== -1) &&
+    state.enabled[x.kind] && x.date >= b.from && x.date <= b.to;
+}
+function pool() { return ITEMS.filter(inScope); }
+
+/* Access and requests */
+function reqFor(itemId) {
+  for (var i = state.requests.length - 1; i >= 0; i--) if (state.requests[i].dir === 'out' && state.requests[i].itemId === itemId) return state.requests[i];
+  return null;
+}
+function accessOf(x) {
+  if (x.access === 'open') return 'open';
+  if (x.pic === PEOPLE.me || x.owner === PEOPLE.me) return 'owner';
+  var r = reqFor(x.id);
+  return r ? r.status : 'none';
+}
+function hasFull(x) { var a = accessOf(x); return a === 'open' || a === 'approved' || a === 'owner'; }
+function textOf(x) { return x.access === 'restricted' && hasFull(x) ? x.detail : x.text; }
+function linkFor(x) {
+  if (!hasFull(x) || !x.url) return null;
+  var L = { drive: 'Open file', calendar: 'Open calendar event', web: 'View on brand website', news: 'Read article', social: 'View on ' + (x.platform || 'social media') };
+  return { href: x.url, label: L[x.kind] };
+}
+function isDeck(x) { return x.ftype === 'Deck' || x.cats.indexOf('deck') !== -1; }
+var NOTE_MIN = 10, NOTE_MAX = 200;
+/* Short "why do you need this" note, required for decks. Returns the wrapper plus a check() that validates it. */
+function whyNote(id, label, placeholder) {
+  var w = h('div', 'needwhy');
+  var head = h('div', 'row');
+  head.appendChild(labelFor(label, id));
+  var counter = h('span', 'counter', '0/' + NOTE_MAX);
+  head.appendChild(counter);
+  var ta = h('textarea'); ta.id = id; ta.rows = 2; ta.maxLength = NOTE_MAX; ta.placeholder = placeholder;
+  var err = h('p', 'err', 'Add a short note (at least ' + NOTE_MIN + ' characters) so the PIC knows why you need it.');
+  err.hidden = true;
+  ta.addEventListener('input', function () {
+    counter.textContent = ta.value.length + '/' + NOTE_MAX;
+    if (ta.value.trim().length >= NOTE_MIN) { err.hidden = true; ta.classList.remove('invalid'); }
+  });
+  w.appendChild(head); w.appendChild(ta); w.appendChild(err);
+  return {
+    el: w,
+    value: function () { return ta.value.trim(); },
+    check: function () {
+      var ok = ta.value.trim().length >= NOTE_MIN;
+      err.hidden = ok; ta.classList.toggle('invalid', !ok);
+      if (!ok) ta.focus();
+      return ok;
+    }
+  };
+}
+function makeRequest(x, purpose, needId, message) {
+  state.requests.push({
+    id: 'r' + (state.nextReq++), dir: 'out', itemId: x.id, status: 'pending', purpose: purpose, message: message || null, sent: REF, neededBy: needDate(needId), remindedOn: null, reason: null,
+    events: [{ d: REF, t: 'Request sent to ' + x.pic.name }]
+  });
+}
+function defaultMsg(x, purpose) {
+  return 'Hi ' + firstName(x.pic) + ', could I get access to “' + x.title + '”? I need it for ' + purpose.toLowerCase() + '.';
+}
+function selectOf(id, options, valueKey, labelKey) {
+  var s = h('select'); s.id = id;
+  options.forEach(function (o) {
+    var op = h('option', null, typeof o === 'string' ? o : o[labelKey]);
+    op.value = typeof o === 'string' ? o : o[valueKey];
+    s.appendChild(op);
+  });
+  return s;
+}
+function labelFor(text, id) { var l = h('label', null, text); l.setAttribute('for', id); return l; }
+
+function requestForm(x) {
+  var f = h('div', 'reqform');
+  var sel = selectOf('rf-purpose', PURPOSES);
+  var need = selectOf('rf-need', NEEDS, 'id', 'label');
+  var deck = isDeck(x);
+  var ta = h('textarea'); ta.id = 'rf-msg'; ta.rows = 3; ta.value = defaultMsg(x, PURPOSES[0]);
+  var why = deck ? whyNote('rf-why', 'Why do you need this deck? (required)', 'One or two sentences, e.g. “Need the pop-up layout to brief our booth vendor.”') : null;
+  state.msgDirty = false;
+  ta.addEventListener('input', function () { state.msgDirty = true; });
+  sel.addEventListener('change', function () { if (!state.msgDirty) ta.value = defaultMsg(x, sel.value); });
+  var row = h('div', 'row');
+  row.appendChild(btn('Send request', 'btn small', function () {
+    if (deck && !why.check()) return;
+    makeRequest(x, sel.value, need.value, deck ? why.value() : ta.value);
+    state.openForm = null;
+    renderAll();
+    toast('Request sent to ' + x.pic.name + '.', 'Track it', trackRequests);
+  }));
+  row.appendChild(btn('Cancel', 'btn ghost', function () { state.openForm = null; renderAll(); }));
+  var parts = [labelFor('Purpose', 'rf-purpose'), sel, labelFor('Needed by', 'rf-need'), need];
+  if (deck) parts.push(why.el); else parts.push(labelFor('Message to ' + x.pic.name, 'rf-msg'), ta);
+  parts.push(row);
+  parts.forEach(function (e) { f.appendChild(e); });
+  return f;
+}
+
+function detailsPanel(x) {
+  var d = h('dl', 'details');
+  function add(k, v, extra) {
+    var w = h('div'); w.appendChild(h('dt', null, k)); var dd = h('dd', null, v);
+    if (extra) dd.appendChild(extra);
+    w.appendChild(dd); d.appendChild(w);
+  }
+  add('Owner', who(x.owner), contactLine(x.owner));
+  if (x.pic) {
+    if (x.pic === x.owner) add('Approver (PIC)', 'Same as owner');
+    else add('Approver (PIC)', who(x.pic), contactLine(x.pic));
+  }
+  add('Topics', catsText(x));
+  add('Location', x.where);
+  add('Type', x.ftype);
+  add('Date', dateLabel(x));
+  var a = accessOf(x);
+  add('Access', a === 'open' ? 'Open to all HypePeople' : a === 'owner' ? 'You own this file' : a === 'approved' ? 'Granted to you' : a === 'pending' ? 'Restricted, request pending' : a === 'declined' ? 'Restricted, request declined' : 'Restricted, needs PIC approval');
+  return d;
+}
+
+function accessCell(x) {
+  var c = h('div', 'acell');
+  var a = accessOf(x);
+  if (a === 'open') c.appendChild(h('span', 'access ok', 'You have the access'));
+  else if (a === 'owner') c.appendChild(h('span', 'access ok', 'You own this file'));
+  else if (a === 'approved') c.appendChild(h('span', 'access ok', 'Access granted'));
+  else if (a === 'pending') {
+    c.appendChild(h('span', 'access wait', 'Pending with ' + x.pic.name));
+    c.appendChild(btn('Follow up', 'link', function () { state.reqView = 'out'; setMode('req'); }));
+  } else if (a === 'declined') {
+    c.appendChild(h('span', 'access bad', 'Request declined'));
+    c.appendChild(btn('View request', 'link', function () { state.reqView = 'out'; setMode('req'); }));
+  } else {
+    c.appendChild(btn('Request access', 'btn ghost', function () { state.openForm = x.id; renderAll(); }));
+  }
+  c.appendChild(btn(state.openDetail[x.id] ? 'Hide details' : 'Details', 'link', function () { state.openDetail[x.id] = !state.openDetail[x.id]; renderAll(); }));
+  return c;
+}
+
+function ownerLine(x) {
+  if (x.pic && x.pic === x.owner) return 'Owner and PIC: ' + x.owner.name;
+  return 'Owner: ' + x.owner.name + (x.pic ? ' · PIC: ' + x.pic.name : '');
+}
+
+function itemRow(x, n) {
+  var li = h('li', 'item');
+  var body = h('div');
+  var top = h('div', 'ititle');
+  if (n) top.appendChild(h('span', 'num', String(n)));
+  top.appendChild(h('span', null, x.title));
+  body.appendChild(top);
+  var meta = h('div', 'imeta');
+  meta.appendChild(h('span', 'badge ' + x.kind, KINDS[x.kind]));
+  meta.appendChild(h('span', 'btag', brandName(x.brand)));
+  meta.appendChild(h('span', null, catsText(x)));
+  meta.appendChild(h('span', null, dateLabel(x)));
+  meta.appendChild(h('span', null, ownerLine(x)));
+  body.appendChild(meta);
+  var lk = linkFor(x);
+  if (lk) body.appendChild(ext(lk.href, lk.label + ' ↗', 'src-link'));
+  li.appendChild(body);
+  li.appendChild(accessCell(x));
+  if (state.openDetail[x.id]) li.appendChild(detailsPanel(x));
+  if (state.openForm === x.id && accessOf(x) === 'none') li.appendChild(requestForm(x));
+  return li;
+}
+
+function widenHint(count) {
+  var p = h('p', 'hint', count + ' more match' + (count > 1 ? 'es' : '') + ' outside these filters. ');
+  p.appendChild(btn('Widen to all brands, topics and dates', 'link', function () {
+    state.brand = 'all'; state.topic = 'all'; state.tf = 'custom'; state.custom = { from: '2021-01-01', to: REF }; renderAll();
+  }));
+  return p;
+}
+
+/* Short passage: first sentence of the top matches, joined as running prose. Citation numbers match the source list. */
+var KEEP_CAPS = /^(Hypefast|Luxcrime|Cessa|Bohopanna|KOZE|Nona|Nyonya|WearStatuQuo|Wearstatuquo|Indonesian|Batik|Kontan|Instagram|LinkedIn|TikTok|Hybrid|HFFR|HYSTORIC|IBFS|Founders|Social|Think|Q\d|\d|[A-Z]{2,})/;
+function firstSentence(t) { var m = t.match(/^.*?[.!?](?=\s|$)/); return (m ? m[0] : t).replace(/[.!?]$/, ''); }
+var NOUN_LEAD = ['plan', 'post', 'press', 'brief', 'booth', 'guide', 'guidelines', 'proposal', 'moodboard', 'shot', 'schedule', 'run', 'showcase', 'session', 'workshop', 'overview', 'recap', 'programme', 'terms', 'pack', 'annual', 'first', 'quarterly', 'quarter', 'survey', 'next', 'early', 'one-page', 'half-day', 'three-day', 'internal', 'version', 'teaser', 'launch', 'pricing', 'season', 'store', 'in-store', 'pop-up', 'redesigned', 'documentation', 'profile', 'coverage', 'bundle', 'product', 'limited', 'invite-only', 'evening', 'announcement', 'shoot', 'campaign', 'q4', 'q3'];
+var JOIN_SAME = ['Also, ', 'Meanwhile, '];
+function passageParts(ranked) {
+  var top = ranked.slice(0, 3), seen = {}, k = 0;
+  return top.map(function (r, i) {
+    var name = brandName(r.it.brand), s = firstSentence(textOf(r.it));
+    var first = s.split(' ')[0], low = first.toLowerCase();
+    if (!KEEP_CAPS.test(first) || /^(Q\d)$/.test(first)) {
+      if (NOUN_LEAD.indexOf(low) !== -1 && !/^q\d$/.test(low)) s = 'the ' + s.charAt(0).toLowerCase() + s.slice(1);
+      else if (!/^Q\d/.test(first)) s = s.charAt(0).toLowerCase() + s.slice(1);
+    }
+    var mentions = s.toLowerCase().indexOf(name.toLowerCase()) !== -1;
+    if (seen[r.it.brand]) s = JOIN_SAME[k++ % 2] + s;
+    else if (!mentions) s = 'For ' + name + ', ' + s;
+    else s = s.charAt(0).toUpperCase() + s.slice(1);
+    seen[r.it.brand] = true;
+    return { text: s + '.', n: i + 1 };
+  });
+}
+function passageText(ranked) { return passageParts(ranked).map(function (p) { return p.text + ' [' + p.n + ']'; }).join(' '); }
+
+function summaryText(ranked) {
+  var lines = [passageText(ranked), ''];
+  lines.push('Sources:');
+  ranked.forEach(function (r, i) { lines.push('[' + (i + 1) + '] ' + r.it.title + ' (' + dateLabel(r.it) + ', ' + r.it.owner.name + ')' + (r.it.url && r.it.kind !== 'drive' && r.it.kind !== 'calendar' ? ' ' + r.it.url : '')); });
+  return lines.join('\n');
+}
+
+function bulkForm(list) {
+  var b = h('div', 'bulk');
+  b.appendChild(h('p', 'hint', 'One request will go to each file’s PIC: ' + list.map(function (x) { return x.pic.name; }).filter(function (n, i, a) { return a.indexOf(n) === i; }).join(', ') + '.'));
+  var sel = selectOf('bf-purpose', PURPOSES);
+  var need = selectOf('bf-need', NEEDS, 'id', 'label');
+  var decks = list.filter(isDeck).length;
+  var why = decks ? whyNote('bf-why', decks === 1 ? 'Why do you need the deck? (required)' : 'Why do you need these ' + decks + ' decks? (required)', 'One or two sentences. This note goes to each deck’s PIC.') : null;
+  var row = h('div', 'row');
+  row.appendChild(btn('Send ' + plural(list.length, 'request'), 'btn small', function () {
+    if (why && !why.check()) return;
+    list.forEach(function (x) { makeRequest(x, sel.value, need.value, isDeck(x) ? why.value() : defaultMsg(x, sel.value)); });
+    state.openBulk = false;
+    renderAll();
+    toast(plural(list.length, 'request') + ' sent.', 'Track them', trackRequests);
+  }));
+  row.appendChild(btn('Cancel', 'btn ghost', function () { state.openBulk = false; renderAll(); }));
+  var parts = [labelFor('Purpose', 'bf-purpose'), sel, labelFor('Needed by', 'bf-need'), need];
+  if (why) parts.push(why.el);
+  parts.push(row);
+  parts.forEach(function (e) { b.appendChild(e); });
+  return b;
+}
+
+function scopeWords() {
+  var parts = [state.brand === 'all' ? 'all brands' : brandName(state.brand)];
+  if (state.topic !== 'all') parts.push(catLabel(state.topic));
+  parts.push(state.tf === 'custom' ? tfText() : tfText().toLowerCase());
+  return parts.join(', ');
+}
+
+/* Feedback: thumbs and knowledge gaps */
+var THUMB = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>';
+var GAP_REASONS = ['Out of date', 'Missing a file or source', 'Too vague', 'Wrong brand or topic'];
+function fbKey() { return [state.query, state.brand, state.topic, state.tf, state.custom.from, state.custom.to].join('|'); }
+function fbFor(key) { if (!state.fb[key]) state.fb[key] = { vote: null, open: false, sent: false, reasons: [] }; return state.fb[key]; }
+function thumbBtn(down, label, pressed, fn) {
+  var b = h('button', 'thumb');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  b.setAttribute('aria-label', label);
+  b.innerHTML = THUMB;
+  if (down) b.firstChild.setAttribute('class', 'down');
+  b.appendChild(document.createTextNode(label));
+  b.addEventListener('click', fn);
+  return b;
+}
+function feedbackBox(empty) {
+  var key = fbKey(), fb = fbFor(key);
+  var wrap = h('div', 'fb');
+  if (fb.sent) {
+    wrap.appendChild(h('p', 'hint', fb.vote === 'up' ? 'Thanks, noted.' : 'Logged as a knowledge gap. The file owners and the Brands Hub team can see it. You have logged ' + plural(state.gaps.length, 'gap') + ' this session.'));
+    return wrap;
+  }
+  var row = h('div', 'row');
+  if (empty) {
+    row.appendChild(btn('Report a knowledge gap', 'btn ghost', function () { fb.vote = 'down'; fb.open = true; renderAnswer(); }));
+  } else {
+    row.appendChild(h('span', 'flabel', 'Was this helpful?'));
+    row.appendChild(thumbBtn(false, 'Helpful', fb.vote === 'up', function () { fb.vote = 'up'; fb.sent = true; renderAnswer(); }));
+    row.appendChild(thumbBtn(true, 'Not helpful', fb.vote === 'down', function () { fb.vote = 'down'; fb.open = true; renderAnswer(); }));
+  }
+  wrap.appendChild(row);
+  if (fb.vote === 'down' && fb.open) {
+    var form = h('div', 'gapform');
+    form.appendChild(h('span', 'flabel', 'What was missing?'));
+    var chips = h('div', 'brands');
+    GAP_REASONS.forEach(function (r) {
+      var c = h('button', 'bchip', r); c.type = 'button';
+      c.setAttribute('aria-pressed', fb.reasons.indexOf(r) !== -1 ? 'true' : 'false');
+      c.addEventListener('click', function () {
+        var i = fb.reasons.indexOf(r);
+        if (i === -1) fb.reasons.push(r); else fb.reasons.splice(i, 1);
+        c.setAttribute('aria-pressed', i === -1 ? 'true' : 'false');
+      });
+      chips.appendChild(c);
+    });
+    form.appendChild(chips);
+    var ta = h('textarea'); ta.id = 'gap-note'; ta.rows = 2; ta.placeholder = 'What were you looking for?';
+    form.appendChild(labelFor('Details (optional)', 'gap-note'));
+    form.appendChild(ta);
+    var r2 = h('div', 'row');
+    r2.appendChild(btn('Send gap report', 'btn small', function () {
+      state.gaps.push({ query: state.query, reasons: fb.reasons.slice(), note: ta.value });
+      fb.sent = true; renderAnswer();
+    }));
+    r2.appendChild(btn('Cancel', 'btn ghost', function () { fb.vote = null; fb.open = false; renderAnswer(); }));
+    form.appendChild(r2);
+    wrap.appendChild(form);
+  }
+  return wrap;
+}
+
+/* Ask */
+function syncChips() { $('chips').hidden = !!state.query; }
+function renderAnswer() {
+  syncChips();
+  var box = $('answer');
+  box.textContent = '';
+  if (!anySource()) { box.appendChild(h('p', 'empty', 'All sources are switched off. Turn on at least one source to continue.')); return; }
+  var p = pool();
+  if (!state.query) return;
+  var all = rank(state.query, p);
+  var ranked = all.slice(0, 6);
+  var outside = rank(state.query, ITEMS.filter(function (x) { return state.enabled[x.kind]; })).length;
+  if (!ranked.length) {
+    box.appendChild(h('p', 'empty', 'Nothing matched “' + state.query + '” in these filters.'));
+    if (outside > 0) box.appendChild(widenHint(outside));
+    box.appendChild(feedbackBox(true));
+    return;
+  }
+  var a = h('div', 'answer');
+  var card = h('div', 'anscard');
+  card.appendChild(h('p', 'qecho', state.query));
+  var para = h('p', 'passage');
+  passageParts(ranked).forEach(function (pt, i) {
+    if (i) para.appendChild(document.createTextNode(' '));
+    para.appendChild(document.createTextNode(pt.text));
+    para.appendChild(h('span', 'cite', String(pt.n)));
+  });
+  card.appendChild(para);
+  var limited = ranked.slice(0, 3).filter(function (r) { return !hasFull(r.it); }).length;
+  if (limited) card.appendChild(h('p', 'notice', limited + (limited > 1 ? ' of these draw' : ' of these draws') + ' on the shared abstract of a restricted file. Request access for the full detail.'));
+
+  a.appendChild(card);
+  /* Quick actions */
+  var actions = h('div', 'chips tight');
+  var copyBtn = btn('Copy summary', 'btn small', function () {
+    var text = summaryText(ranked);
+    copyText(text, copyBtn, function () {
+      var ta = h('textarea'); ta.readOnly = true; ta.rows = 7; ta.value = text;
+      a.insertBefore(ta, actions.nextSibling);
+      ta.focus(); ta.select();
+    });
+  });
+  actions.appendChild(copyBtn);
+  var closed = ranked.some(function (r) { return !state.openDetail[r.it.id]; });
+  if (closed) actions.appendChild(btn('Show owners and contacts', 'chip', function () { ranked.forEach(function (r) { state.openDetail[r.it.id] = true; }); renderAll(); }));
+  a.appendChild(actions);
+
+  /* Bulk request */
+  var needAccess = ranked.filter(function (r) { return accessOf(r.it) === 'none'; }).map(function (r) { return r.it; });
+  if (needAccess.length >= 2) {
+    var brow = h('div', 'row');
+    brow.appendChild(btn(state.openBulk ? 'Close bulk request' : 'Request access to all ' + needAccess.length + ' restricted files', 'btn ghost', function () { state.openBulk = !state.openBulk; renderAll(); }));
+    a.appendChild(brow);
+    if (state.openBulk) a.appendChild(bulkForm(needAccess));
+  }
+
+  a.appendChild(h('p', 'sechead', 'Sources · ' + ranked.length));
+  var list = h('ul', 'items');
+  ranked.forEach(function (r, i) { list.appendChild(itemRow(r.it, i + 1)); });
+  a.appendChild(list);
+  if (all.length > ranked.length) a.appendChild(h('p', 'hint', 'Showing the top ' + ranked.length + ' of ' + all.length + ' matches. Narrow by brand or topic to see the rest.'));
+  if (outside > all.length) a.appendChild(widenHint(outside - all.length));
+  a.appendChild(feedbackBox(false));
+  box.appendChild(a);
+}
+
+function renderRecent() {
+  var box = $('recent');
+  box.textContent = '';
+  if (!state.recent.length) return;
+  box.appendChild(h('span', 'flabel', 'Recent'));
+  state.recent.forEach(function (q) {
+    box.appendChild(btn(q, 'chip', function () { $('q').value = q; runQuery(q); }));
+  });
+}
+
+function runQuery(text) {
+  text = text.trim();
+  if (!text) return;
+  state.query = text;
+  syncChips();
+  state.recent = [text].concat(state.recent.filter(function (q) { return q !== text; })).slice(0, 4);
+  renderRecent();
+  var my = ++state.token;
+  var box = $('answer');
+  box.textContent = '';
+  box.appendChild(h('p', 'thinking', 'Searching your selected sources…'));
+  setTimeout(function () { if (my === state.token) renderAnswer(); }, 500);
+}
+
+/* Requests: asked by me, and sent to me */
+function waiting(r) { return r.status === 'pending' ? daysBetween(r.sent, REF) : 0; }
+function needsNudge(r) { return r.status === 'pending' && waiting(r) >= 2 && r.remindedOn !== REF; }
+/* Filters above only apply to Ask. Requests always lists everything. */
+function matchBrand(r) { return true; }
+
+function toast(msg, label, fn) {
+  var t = $('toast');
+  t.textContent = '';
+  t.appendChild(h('span', null, msg));
+  if (fn) t.appendChild(btn(label, 'link', function () { t.hidden = true; fn(); }));
+  t.hidden = false;
+  clearTimeout(toast.t);
+  toast.t = setTimeout(function () { t.hidden = true; }, 6000);
+}
+function trackRequests() { state.reqView = 'out'; state.reqFilter = 'all'; setMode('req'); }
+
+function renderRequests() {
+  var dir = state.reqView;
+  var outP = state.requests.filter(function (r) { return r.dir === 'out' && r.status === 'pending' && matchBrand(r); }).length;
+  var inP = state.requests.filter(function (r) { return r.dir === 'in' && r.status === 'pending' && matchBrand(r); }).length;
+  var view = $('reqView');
+  view.textContent = '';
+  [['out', 'Requested by me', outP], ['in', 'Requests to me', inP]].forEach(function (p) {
+    var b = h('button', 'bchip', p[1] + (p[2] ? ' · ' + p[2] + ' pending' : ''));
+    b.type = 'button';
+    b.setAttribute('aria-pressed', dir === p[0] ? 'true' : 'false');
+    b.addEventListener('click', function () { state.reqView = p[0]; state.reqFilter = 'all'; renderRequests(); });
+    view.appendChild(b);
+  });
+  $('reqHint').textContent = dir === 'out' ? 'Files you asked access to, and where each request stands. Click a tile to filter.' : 'People asking you for access to files you own or approve. Click a tile to filter.';
+
+  var mine = state.requests.filter(function (r) { return r.dir === dir && matchBrand(r); });
+  var counts = { pending: 0, approved: 0, declined: 0 };
+  mine.forEach(function (r) { counts[r.status]++; });
+  var stats = $('stats');
+  stats.textContent = '';
+  [['all', 'All requests', mine.length], ['pending', dir === 'in' ? 'Waiting for you' : 'Pending', counts.pending], ['approved', 'Approved', counts.approved], ['declined', 'Declined', counts.declined]].forEach(function (p) {
+    var t = h('button', 'stat ' + p[0]);
+    t.type = 'button';
+    t.setAttribute('aria-pressed', state.reqFilter === p[0] ? 'true' : 'false');
+    t.appendChild(h('strong', null, String(p[2])));
+    t.appendChild(h('span', null, p[1]));
+    t.addEventListener('click', function () { state.reqFilter = p[0]; renderRequests(); });
+    stats.appendChild(t);
+  });
+  var box = $('rcards');
+  box.textContent = '';
+  var shown = mine.filter(function (r) { return state.reqFilter === 'all' || r.status === state.reqFilter; });
+  if (!shown.length) {
+    box.appendChild(h('p', 'empty', dir === 'out' ? 'No requests here yet. Request access from any restricted file in Ask and track it on this tab.' : 'Nobody is waiting on you. New requests for files you own will show up here.'));
+    return;
+  }
+  shown.sort(function (a, b) {
+    var pa = a.status === 'pending' ? 0 : 1, pb = b.status === 'pending' ? 0 : 1;
+    if (pa !== pb) return pa - pb;
+    if (pa === 0) return (a.neededBy || '9999') < (b.neededBy || '9999') ? -1 : 1;
+    return a.sent < b.sent ? 1 : -1;
+  });
+  shown.forEach(function (r) { box.appendChild(dir === 'out' ? outCard(r) : inCard(r)); });
+}
+
+function timeline(r) {
+  var d = h('details', 'tl');
+  d.appendChild(h('summary', null, 'Activity (' + r.events.length + ')'));
+  var tl = h('ul', 'timeline');
+  r.events.forEach(function (e) {
+    var li = h('li');
+    li.appendChild(h('b', null, fmt(e.d) + '  '));
+    li.appendChild(document.createTextNode(e.t));
+    tl.appendChild(li);
+  });
+  d.appendChild(tl);
+  return d;
+}
+function headRow(r, x) {
+  var head = h('div', 'rhead');
+  head.appendChild(h('strong', null, x.title));
+  head.appendChild(h('span', 'badge ' + r.status, r.status));
+  var bp = h('span', 'brandpill', brandName(x.brand));
+  bp.style.setProperty('--b', ({ hf: '#1968ff', lux: '#c2306b', cessa: '#1b7f5c', boho: '#d98a1c', koze: '#1f63c9', nona: '#7a3fc4', nyonya: '#d4483f', wsq: '#6b7280', hystoric: '#0f766e', hffr: '#b45309', ibfs: '#4338ca', socialnight: '#be185d', foundersclub: '#15803d' })[x.brand] || '#1968ff');
+  head.appendChild(bp);
+  return head;
+}
+function timingMeta(r) {
+  var m2 = h('div', 'imeta');
+  m2.appendChild(h('span', null, 'Purpose: ' + r.purpose));
+  m2.appendChild(h('span', null, (r.dir === 'in' ? 'Received ' : 'Sent ') + fmt(r.sent)));
+  if (r.neededBy) {
+    var soon = r.status === 'pending' && daysBetween(REF, r.neededBy) <= 1;
+    m2.appendChild(h('span', soon ? 'warn' : null, 'Needed by ' + fmt(r.neededBy)));
+  }
+  if (r.status === 'pending') {
+    var w = waiting(r);
+    m2.appendChild(h('span', w >= 2 ? 'warn' : null, 'Waiting ' + plural(w, 'day') + (r.dir === 'out' && needsNudge(r) ? ', reminder suggested' : '')));
+  }
+  return m2;
+}
+
+function outCard(r) {
+  var x = itemById(r.itemId);
+  var c = h('div', 'rcard ' + r.status);
+  c.appendChild(headRow(r, x));
+  var m1 = h('div', 'imeta');
+  m1.appendChild(h('span', null, 'PIC: ' + who(x.pic)));
+  m1.appendChild(contactLine(x.pic));
+  if (x.owner !== x.pic) m1.appendChild(h('span', null, 'Owner: ' + x.owner.name));
+  c.appendChild(m1);
+  c.appendChild(timingMeta(r));
+  if (r.message && isDeck(x)) { var rn = h('p', 'reqnote'); rn.appendChild(h('b', null, 'Why you need it')); rn.appendChild(document.createTextNode(r.message)); c.appendChild(rn); }
+  if (r.reason) c.appendChild(h('p', 'notice', r.reason));
+  c.appendChild(timeline(r));
+  var row = h('div', 'row');
+  if (r.status === 'pending') {
+    var rem = btn(r.remindedOn === REF ? 'Reminder sent today' : 'Send reminder', 'btn small', function () {
+      r.remindedOn = REF; r.events.push({ d: REF, t: 'Reminder sent to ' + x.pic.name }); renderRequests();
+    });
+    if (r.remindedOn === REF) rem.disabled = true;
+    row.appendChild(rem);
+    row.appendChild(btn('Withdraw', 'btn ghost danger', function () {
+      state.requests = state.requests.filter(function (q) { return q !== r; }); renderAll();
+    }));
+  } else if (r.status === 'approved') {
+    row.appendChild(ext(x.url, 'Open file ↗', 'src-link'));
+  } else {
+    row.appendChild(btn('Request again', 'btn small', function () {
+      r.status = 'pending'; r.reason = null; r.remindedOn = null; r.sent = REF;
+      r.events.push({ d: REF, t: 'Request sent again to ' + x.pic.name }); renderAll();
+    }));
+  }
+  c.appendChild(row);
+  if (r.status === 'pending') {
+    var demo = h('div', 'demo');
+    demo.appendChild(h('span', null, 'Prototype only, simulate the PIC reply:'));
+    demo.appendChild(btn('Approve', 'link', function () {
+      r.status = 'approved'; r.events.push({ d: REF, t: 'Approved by ' + x.pic.name }); renderAll();
+    }));
+    demo.appendChild(btn('Decline', 'link', function () {
+      r.status = 'declined'; r.reason = 'Not needed for this purpose. Please use the summary version.';
+      r.events.push({ d: REF, t: 'Declined by ' + x.pic.name }); renderAll();
+    }));
+    c.appendChild(demo);
+  }
+  return c;
+}
+
+var DECLINE_REASONS = ['Please use the summary instead.', 'This is not the right file for that purpose.', 'You are not authorised for this file.'];
+function inCard(r) {
+  var x = itemById(r.itemId);
+  var from = PEOPLE[r.from];
+  var c = h('div', 'rcard ' + r.status);
+  c.appendChild(headRow(r, x));
+  var m1 = h('div', 'imeta');
+  m1.appendChild(h('span', null, 'From: ' + who(from)));
+  m1.appendChild(contactLine(from));
+  c.appendChild(m1);
+  c.appendChild(timingMeta(r));
+  c.appendChild(h('p', 'quote', '“' + r.message + '”'));
+  if (r.status === 'approved') c.appendChild(h('p', 'hint', r.expires ? 'Access until ' + fmt(r.expires) + '.' : 'Access has no expiry.'));
+  if (r.reason) c.appendChild(h('p', 'notice', r.reason));
+  c.appendChild(timeline(r));
+  if (r.status === 'pending') {
+    if (state.declineOpen === r.id) {
+      var form = h('div', 'gapform');
+      form.appendChild(h('span', 'flabel', 'Reason for declining'));
+      var chips = h('div', 'brands');
+      var ta = h('textarea'); ta.id = 'dec-' + r.id; ta.rows = 2; ta.placeholder = 'Add a short reason so the requester knows what to do next.';
+      DECLINE_REASONS.forEach(function (t) { chips.appendChild(btn(t, 'chip', function () { ta.value = t; })); });
+      form.appendChild(chips);
+      form.appendChild(ta);
+      var r2 = h('div', 'row');
+      r2.appendChild(btn('Decline request', 'btn small danger', function () {
+        r.status = 'declined'; r.reason = ta.value || 'Declined without a reason.';
+        r.events.push({ d: REF, t: 'Declined by you' }); state.declineOpen = null; renderAll();
+      }));
+      r2.appendChild(btn('Cancel', 'btn ghost', function () { state.declineOpen = null; renderRequests(); }));
+      form.appendChild(r2);
+      c.appendChild(form);
+    } else {
+      var row = h('div', 'row');
+      var dur = selectOf('dur-' + r.id, [{ v: '7', l: 'Access for 7 days' }, { v: '30', l: 'Access for 30 days' }, { v: '0', l: 'No expiry' }], 'v', 'l');
+      dur.setAttribute('aria-label', 'Access duration');
+      dur.value = '30';
+      row.appendChild(dur);
+      row.appendChild(btn('Approve', 'btn small', function () {
+        var days = parseInt(dur.value, 10);
+        r.status = 'approved'; r.expires = days ? addDays(REF, days) : null;
+        r.events.push({ d: REF, t: 'Approved by you' + (days ? ' for ' + days + ' days' : ' with no expiry') });
+        renderAll();
+      }));
+      row.appendChild(btn('Decline', 'btn ghost danger', function () { state.declineOpen = r.id; renderRequests(); }));
+      c.appendChild(row);
+    }
+  }
+  return c;
+}
+
+/* Shell */
+function syncFilters() {
+  var chips = document.querySelectorAll('#brands .bchip, #projects .bchip');
+  for (var i = 0; i < chips.length; i++) chips[i].setAttribute('aria-pressed', chips[i].getAttribute('data-id') === state.brand ? 'true' : 'false');
+  $('tf').value = state.tf;
+  $('topic').value = state.topic;
+  $('customRange').hidden = state.tf !== 'custom';
+  $('cf').value = state.custom.from;
+  $('ct').value = state.custom.to;
+  var names = KIND_KEYS.filter(function (k) { return state.enabled[k]; }).map(function (k) { return KINDS[k]; });
+  var sc = $('scope');
+  sc.textContent = '';
+  sc.appendChild(document.createTextNode('Showing '));
+  sc.appendChild(h('b', null, state.brand === 'all' ? 'all brands' : brandName(state.brand)));
+  sc.appendChild(document.createTextNode(' · ' + (state.topic === 'all' ? 'all topics' : catLabel(state.topic)) + ' · ' + tfText() + ' · ' + (names.length ? names.join(', ') : 'no sources')));
+}
+function renderPendingCount() {
+  var n = state.requests.filter(function (r) { return r.dir === 'in' && r.status === 'pending'; }).length;
+  var c = $('pendingCount');
+  c.textContent = String(n);
+  c.hidden = n === 0;
+}
+function renderAll() {
+  syncFilters();
+  renderAnswer();
+  renderRequests();
+  renderPendingCount();
+}
+function setMode(mode) {
+  state.mode = mode;
+  var map = { ask: ['tabAsk', 'askPane'], req: ['tabReq', 'reqPane'] };
+  Object.keys(map).forEach(function (k) {
+    var on = k === mode;
+    $(map[k][1]).hidden = !on;
+    $(map[k][0]).setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  $('filters').hidden = mode === 'req';
+  $('scope').hidden = mode === 'req';
+  if (mode === 'req') renderRequests();
+}
+
+(function init() {
+  var bw = $('brands');
+  var all = [{ id: 'all', name: 'All brands' }].concat(BRANDS);
+  all.forEach(function (b) {
+    var c = h('button', 'bchip', b.name);
+    c.type = 'button';
+    c.setAttribute('data-id', b.id);
+    c.addEventListener('click', function () { state.brand = b.id; renderAll(); });
+    bw.appendChild(c);
+  });
+  PROJECTS.forEach(function (b) {
+    var c = h('button', 'bchip', b.name);
+    c.type = 'button';
+    if (b.full) c.title = b.full;
+    c.setAttribute('data-id', b.id);
+    c.addEventListener('click', function () { state.brand = b.id; renderAll(); });
+    $('projects').appendChild(c);
+  });
+  var topic = $('topic');
+  var allOpt = h('option', null, 'All topics'); allOpt.value = 'all'; topic.appendChild(allOpt);
+  CATS.slice().sort(function (a, b) { return a.label.localeCompare(b.label); }).forEach(function (c) { var o = h('option', null, c.label); o.value = c.id; topic.appendChild(o); });
+  topic.addEventListener('change', function () { state.topic = topic.value; renderAll(); });
+  var tf = $('tf');
+  TFS.forEach(function (t) { var o = h('option', null, t.label); o.value = t.id; tf.appendChild(o); });
+  tf.addEventListener('change', function () { state.tf = tf.value; renderAll(); });
+  $('cf').addEventListener('change', function (e) { state.custom.from = e.target.value; renderAll(); });
+  $('ct').addEventListener('change', function (e) { state.custom.to = e.target.value; renderAll(); });
+  KIND_KEYS.forEach(function (k) {
+    $('t-' + k).addEventListener('change', function (e) { state.enabled[k] = e.target.checked; renderAll(); });
+  });
+  var chips = $('chips');
+  QUESTIONS.forEach(function (q) {
+    chips.appendChild(btn(q, 'chip', function () {
+      state.brand = 'all'; state.topic = 'all'; state.tf = 'custom'; state.custom = { from: '2025-01-01', to: REF };
+      syncFilters(); $('q').value = q; runQuery(q);
+    }));
+  });
+  var suBtn = $('signupBtn'), suForm = $('signupForm'), suMsg = $('su-err');
+  suBtn.addEventListener('click', function () {
+    if (suBtn.classList.contains('done')) return;
+    suForm.hidden = !suForm.hidden;
+    suBtn.setAttribute('aria-expanded', suForm.hidden ? 'false' : 'true');
+    if (!suForm.hidden) $('su-email').focus();
+  });
+  suForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('su-email').value.trim().toLowerCase();
+    if (!/^[a-z0-9._%+-]+@hypefast\.id$/.test(v)) {
+      suMsg.textContent = 'Enter a valid @hypefast.id email, for example name@hypefast.id.';
+      suMsg.className = 'hint bad';
+      return;
+    }
+    suForm.hidden = true;
+    suBtn.textContent = 'Signed up as ' + v;
+    suBtn.classList.add('done');
+    suBtn.setAttribute('aria-expanded', 'false');
+    toast('Welcome, HypePeople. You are signed up with ' + v + '.');
+  });
+  $('askForm').addEventListener('submit', function (e) { e.preventDefault(); runQuery($('q').value); });
+  $('tabAsk').addEventListener('click', function () { setMode('ask'); });
+  $('tabReq').addEventListener('click', function () { setMode('req'); });
+  document.addEventListener('keydown', function (e) {
+    var tag = document.activeElement ? document.activeElement.tagName : '';
+    if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+      e.preventDefault(); setMode('ask'); $('q').focus();
+    }
+  });
+  renderAll();
+})();
+</script>
+
+</body></html>
